@@ -4,7 +4,8 @@ Stamps each downloaded PDF with a unique serial number: JBPF/YYYY/MON/XXXX
 Serial counter persists in counter.json
 """
 
-from flask import Flask, send_file, render_template, jsonify
+from flask import Flask, send_file, render_template, jsonify, request, redirect
+from flask_cors import CORS
 from pypdf import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
 import io
@@ -14,11 +15,14 @@ import threading
 from datetime import datetime
 
 app = Flask(__name__)
+CORS(app, origins=os.environ.get("FRONTEND_URL", "*"))
 
 # ── Config ────────────────────────────────────────────────────────────────────
 PDF_PATH      = os.path.join(os.path.dirname(__file__), "Application_Form.pdf")
 COUNTER_FILE  = os.path.join(os.path.dirname(__file__), "counter.json")
 PREFIX        = "JBPF"          # Change to your trust initials if needed
+FORM_URL      = "https://forms.gle/MUELu1tA9cfKKr8s6"
+DOWNLOAD_KEY  = os.environ.get("DOWNLOAD_KEY", "jbpf2026secure")
 MONTH_ABBR    = ["JAN","FEB","MAR","APR","MAY","JUN",
                  "JUL","AUG","SEP","OCT","NOV","DEC"]
 
@@ -81,12 +85,11 @@ def stamp_pdf(serial: str) -> bytes:
     return out.read()
 
 # ── Routes ────────────────────────────────────────────────────────────────────
-@app.route("/")
-def index():
-    return render_template("index.html")
-
 @app.route("/download")
 def download():
+    if request.args.get("key") != DOWNLOAD_KEY:
+        return redirect(FORM_URL)
+
     serial   = next_serial()
     pdf_data = stamp_pdf(serial)
 

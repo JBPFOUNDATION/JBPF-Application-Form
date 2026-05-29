@@ -8,3 +8,7 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: DOWNLOAD_KEY
+        value: jbpf2026secure
+      - key: FRONTEND_URL
+        value: https://your-app.vercel.app
