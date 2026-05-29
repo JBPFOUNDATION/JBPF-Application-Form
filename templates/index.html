@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Application Form — Download</title>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink:   #0e1a2e;
+      --gold:  #b8902a;
+      --cream: #faf7f2;
+      --muted: #6b7280;
+      --border:#d6cfc4;
+    }
+    body {
+      min-height: 100vh;
+      background: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--ink);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 2rem;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--gold);
+      border-radius: 2px;
+      padding: 3rem 3.5rem;
+      max-width: 520px; width: 100%;
+      box-shadow: 0 4px 32px rgba(14,26,46,.07);
+      text-align: center;
+      animation: fadeUp .5s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(16px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .seal {
+      width:72px; height:72px; background:var(--ink);
+      border-radius:50%; display:flex;
+      align-items:center; justify-content:center;
+      margin:0 auto 1.75rem;
+    }
+    .seal svg { width:38px; height:38px; fill:var(--gold); }
+    h1 { font-family:'EB Garamond',serif; font-size:1.75rem; font-weight:600; margin-bottom:.5rem; }
+    .subtitle { font-size:.875rem; color:var(--muted); margin-bottom:2.25rem; line-height:1.6; }
+    .info-box {
+      background:#f5f2ed; border:1px solid var(--border);
+      border-radius:2px; padding:1rem 1.25rem;
+      margin-bottom:2rem; text-align:left;
+    }
+    .info-box p { font-size:.8rem; color:var(--muted); line-height:1.7; margin-bottom:.2rem; }
+    .info-box strong { color:var(--ink); }
+    .btn {
+      display:inline-flex; align-items:center; gap:.625rem;
+      background:var(--ink); color:#fff;
+      font-family:'DM Sans',sans-serif; font-size:.9rem; font-weight:500;
+      padding:.875rem 2rem; border:none; border-radius:2px;
+      cursor:pointer; text-decoration:none;
+      transition:background .2s, transform .15s;
+      width:100%; justify-content:center;
+    }
+    .btn:hover  { background:#1a2f50; }
+    .btn:active { transform:scale(.98); }
+    .btn svg { width:18px; height:18px; fill:var(--gold); flex-shrink:0; }
+    .divider { border:none; border-top:1px solid var(--border); margin:1.75rem 0; }
+    .note { font-size:.78rem; color:var(--muted); line-height:1.6; }
+    .badge {
+      display:inline-block; background:#e8f5e9; color:#2e7d32;
+      font-size:.72rem; font-weight:500; letter-spacing:.04em;
+      padding:.2rem .6rem; border-radius:99px; margin-bottom:1.5rem;
+    }
+    .counter-box {
+      display:flex; align-items:center; justify-content:space-between;
+      background:#f5f2ed; border:1px solid var(--border);
+      border-radius:2px; padding:.75rem 1.25rem;
+      margin-bottom:1.5rem;
+    }
+    .counter-label { font-size:.8rem; color:var(--muted); }
+    .counter-value {
+      font-family:'EB Garamond',serif; font-size:1.5rem;
+      font-weight:600; color:var(--ink); letter-spacing:.03em;
+      min-width:3ch; text-align:right;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="seal">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/></svg>
+    </div>
+    <span class="badge">✦ Official Document</span>
+    <h1>Financial Aid<br>Application Form</h1>
+    <p class="subtitle">Download the official application form.<br>Each form carries a unique application number for tracking.</p>
+    <div class="counter-box">
+      <span class="counter-label">Total Applications Issued</span>
+      <span class="counter-value" id="dl-count">—</span>
+    </div>
+    <div class="info-box">
+      <p><strong>Before applying, keep these ready:</strong></p>
+      <p>• ID Proof &amp; Address Proof</p>
+      <p>• Doctor's Recommendation Letter</p>
+      <p>• Medical Reports &amp; Hospital Bills</p>
+      <p>• Bank Statement (recent 3 months)</p>
+    </div>
+    <a class="btn" href="https://forms.gle/MUELu1tA9cfKKr8s6" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M12 16l-5-5 1.41-1.41L11 13.17V4h2v9.17l2.59-2.58L17 11l-5 5zm-7 2h14v2H5v-2z"/></svg>
+      Fill Form to Download
+    </a>
+    <hr class="divider"/>
+    <p class="note">Fill the form using <strong>block letters only</strong>.<br>
+    Submit along with all required documents.<br>
+    Incomplete applications will not be considered.</p>
+  </div>
+  <script>
+    async function loadCount() {
+      try {
+        const r = await fetch('/counter');
+        const d = await r.json();
+        document.getElementById('dl-count').textContent = d.total.toString().padStart(4, '0');
+      } catch(e) {}
+    }
+    loadCount();
+    // Refresh counter after a download link is clicked
+    document.querySelector('.btn').addEventListener('click', () => {
+      setTimeout(loadCount, 2000);
+    });
+  </script>
+</body>
+</html>
