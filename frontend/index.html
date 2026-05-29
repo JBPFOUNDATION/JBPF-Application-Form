@@ -29,7 +29,7 @@
       border-top: 4px solid var(--gold);
       border-radius: 2px;
       padding: 3rem 3.5rem;
-      max-width: 520px; width: 100%;
+      max-width: 620px; width: 100%;
       box-shadow: 0 4px 32px rgba(14,26,46,.07);
       text-align: center;
       animation: fadeUp .5s ease both;
@@ -47,13 +47,86 @@
     .seal svg { width:38px; height:38px; fill:var(--gold); }
     h1 { font-family:'EB Garamond',serif; font-size:1.75rem; font-weight:600; margin-bottom:.5rem; }
     .subtitle { font-size:.875rem; color:var(--muted); margin-bottom:2.25rem; line-height:1.6; }
-    .info-box {
+
+    /* Counter */
+    .counter-box {
+      display:flex; align-items:center; justify-content:space-between;
       background:#f5f2ed; border:1px solid var(--border);
-      border-radius:2px; padding:1rem 1.25rem;
-      margin-bottom:2rem; text-align:left;
+      border-radius:2px; padding:.75rem 1.25rem;
+      margin-bottom:1.75rem;
     }
-    .info-box p { font-size:.8rem; color:var(--muted); line-height:1.7; margin-bottom:.2rem; }
-    .info-box strong { color:var(--ink); }
+    .counter-label { font-size:.8rem; color:var(--muted); }
+    .counter-value {
+      font-family:'EB Garamond',serif; font-size:1.5rem;
+      font-weight:600; color:var(--ink); letter-spacing:.03em;
+      min-width:3ch; text-align:right;
+    }
+
+    /* Tabs */
+    .tabs { display:flex; gap:.5rem; margin-bottom:1rem; }
+    .tab-btn {
+      flex:1; padding:.6rem 1rem; font-size:.8rem; font-weight:500;
+      font-family:'DM Sans',sans-serif;
+      background:#f5f2ed; border:1px solid var(--border);
+      border-radius:2px; cursor:pointer; color:var(--muted);
+      transition:all .2s;
+    }
+    .tab-btn.active {
+      background:var(--ink); color:#fff; border-color:var(--ink);
+    }
+    .tab-panel { display:none; text-align:left; }
+    .tab-panel.active { display:block; }
+
+    /* Doc list */
+    .doc-section {
+      background:#f5f2ed; border:1px solid var(--border);
+      border-radius:2px; padding:1.25rem 1.5rem;
+      margin-bottom:1rem;
+    }
+    .doc-section h3 {
+      font-size:.75rem; font-weight:600; letter-spacing:.07em;
+      text-transform:uppercase; color:var(--gold);
+      margin-bottom:.875rem;
+    }
+    .doc-list { list-style:none; padding:0; }
+    .doc-list > li {
+      font-size:.82rem; color:var(--ink); line-height:1.5;
+      padding:.35rem 0; border-bottom:1px solid var(--border);
+      display:flex; gap:.6rem; align-items:flex-start;
+    }
+    .doc-list > li:last-child { border-bottom:none; padding-bottom:0; }
+    .doc-list > li::before {
+      content: counter(item);
+      counter-increment: item;
+      background:var(--ink); color:#fff;
+      font-size:.68rem; font-weight:600;
+      width:18px; height:18px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      flex-shrink:0; margin-top:.1rem;
+    }
+    .doc-list { counter-reset: item; }
+    .doc-list .sub {
+      font-size:.77rem; color:var(--muted);
+      margin-top:.25rem; padding-left:0; list-style:none;
+    }
+    .doc-list .sub li { border:none; padding:.1rem 0; display:flex; gap:.4rem; }
+    .doc-list .sub li::before { content:"•"; background:none; color:var(--gold); width:auto; height:auto; font-size:1rem; line-height:1.2; }
+
+    /* Address */
+    .address-box {
+      background:#fff; border:1px solid var(--border);
+      border-left:3px solid var(--gold);
+      border-radius:2px; padding:1rem 1.25rem;
+      text-align:left; margin-bottom:1.75rem;
+    }
+    .address-box h4 {
+      font-size:.72rem; font-weight:600; letter-spacing:.07em;
+      text-transform:uppercase; color:var(--muted); margin-bottom:.6rem;
+    }
+    .address-box p { font-size:.82rem; color:var(--ink); line-height:1.8; }
+    .address-box .phone { color:var(--gold); font-weight:500; }
+
+    /* Button */
     .btn {
       display:inline-flex; align-items:center; gap:.625rem;
       background:var(--ink); color:#fff;
@@ -73,18 +146,6 @@
       font-size:.72rem; font-weight:500; letter-spacing:.04em;
       padding:.2rem .6rem; border-radius:99px; margin-bottom:1.5rem;
     }
-    .counter-box {
-      display:flex; align-items:center; justify-content:space-between;
-      background:#f5f2ed; border:1px solid var(--border);
-      border-radius:2px; padding:.75rem 1.25rem;
-      margin-bottom:1.5rem;
-    }
-    .counter-label { font-size:.8rem; color:var(--muted); }
-    .counter-value {
-      font-family:'EB Garamond',serif; font-size:1.5rem;
-      font-weight:600; color:var(--ink); letter-spacing:.03em;
-      min-width:3ch; text-align:right;
-    }
   </style>
 </head>
 <body>
@@ -95,17 +156,120 @@
     <span class="badge">✦ Official Document</span>
     <h1>Financial Aid<br>Application Form</h1>
     <p class="subtitle">Download the official application form.<br>Each form carries a unique application number for tracking.</p>
+
     <div class="counter-box">
       <span class="counter-label">Total Applications Issued</span>
       <span class="counter-value" id="dl-count">—</span>
     </div>
-    <div class="info-box">
-      <p><strong>Before applying, keep these ready:</strong></p>
-      <p>• ID Proof &amp; Address Proof</p>
-      <p>• Doctor's Recommendation Letter</p>
-      <p>• Medical Reports &amp; Hospital Bills</p>
-      <p>• Bank Statement (recent 3 months)</p>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('education', this)">Education Donation</button>
+      <button class="tab-btn" onclick="switchTab('medical', this)">Medical Purpose</button>
     </div>
+
+    <!-- Education Panel -->
+    <div class="tab-panel active" id="tab-education">
+      <div class="doc-section">
+        <h3>Documents Required</h3>
+        <ol class="doc-list">
+          <li>Application form filled properly</li>
+          <li>Application Letter for Education Donation</li>
+          <li>Letter from School / College</li>
+          <li>Marksheet / Certificates</li>
+          <li>6 months Bank Statements where income reflects</li>
+          <li>Salary / Income letter from employer</li>
+          <li>KYC documents — PAN / Aadhar</li>
+          <li>Income certificate issued by Government (for higher education 12th+)</li>
+        </ol>
+      </div>
+      <div class="address-box">
+        <h4>Send documents by courier to</h4>
+        <p>
+          J B Poncha &amp; Mrs B J Poncha Foundation<br>
+          201 Rishabh House, 301 Duncan Road,<br>
+          Two Tanks, Opp Sopariwala Hall,<br>
+          Mumbai 400004<br>
+          <span class="phone">Mobile: 9930950019</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Medical Panel -->
+    <div class="tab-panel" id="tab-medical">
+      <div class="doc-section">
+        <h3>Documents Required</h3>
+        <ol class="doc-list">
+          <li>
+            <div>
+              <strong>Filled Application Form</strong>
+              <ul class="sub">
+                <li>Affix a recent photograph of the patient</li>
+                <li>Signed and self-attested</li>
+                <li>Include a self-attested copy of applicant's Aadhar Card</li>
+              </ul>
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>Letter Explaining Medical &amp; Financial Situation</strong>
+              <ul class="sub">
+                <li>Clearly mention the medical issue</li>
+                <li>Describe the current financial condition</li>
+                <li>Explain the need for financial assistance &amp; approximate cost of treatment</li>
+              </ul>
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>Medical Reports and Bills</strong>
+              <ul class="sub">
+                <li>Attach original medical reports</li>
+                <li>Include paid hospital bills for verification</li>
+              </ul>
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>Medical Insurance Details (if applicable)</strong>
+              <ul class="sub">
+                <li>Copy of medical insurance policy</li>
+                <li>Whether insurance was availed</li>
+                <li>Amount covered by insurance</li>
+                <li>Amount paid by the applicant</li>
+              </ul>
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>Doctor's Recommendation Letter</strong>
+              <ul class="sub">
+                <li>Letter from treating doctor recommending the treatment (if available)</li>
+              </ul>
+            </div>
+          </li>
+          <li>
+            <div>
+              <strong>Bank Statement (last 6 months)</strong>
+              <ul class="sub">
+                <li>From the account where income from occupation is deposited</li>
+              </ul>
+            </div>
+          </li>
+        </ol>
+      </div>
+      <div class="address-box">
+        <h4>Make a file of all documents and send by courier to</h4>
+        <p>
+          J B Poncha &amp; Mrs B J Poncha Foundation<br>
+          201 Rishabh House, 301 Duncan Road,<br>
+          Two Tanks, Opp Sopariwala Hall,<br>
+          Mumbai 400004<br>
+          <span class="phone">Mobile: 9930950019</span>
+        </p>
+      </div>
+    </div>
+
     <a class="btn" href="https://forms.gle/MUELu1tA9cfKKr8s6" target="_blank">
       <svg viewBox="0 0 24 24"><path d="M12 16l-5-5 1.41-1.41L11 13.17V4h2v9.17l2.59-2.58L17 11l-5 5zm-7 2h14v2H5v-2z"/></svg>
       Fill Form to Download
@@ -115,8 +279,16 @@
     Submit along with all required documents.<br>
     Incomplete applications will not be considered.</p>
   </div>
+
   <script>
     const API = "https://jbpf-application-form.onrender.com";
+
+    function switchTab(name, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + name).classList.add('active');
+    }
 
     async function loadCount() {
       try {
