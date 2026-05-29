@@ -7,7 +7,7 @@ Serial counter persists in counter.json
 from flask import Flask, send_file, render_template, jsonify, request, redirect
 from flask_cors import CORS
 from pypdf import PdfReader, PdfWriter
-from reportlab.pdfgen import canvas
+from reportlab.pdfgen import canvas 
 import io
 import json
 import os
