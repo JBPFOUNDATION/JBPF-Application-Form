@@ -61,12 +61,11 @@ def next_serial():
 # ── PDF stamping ──────────────────────────────────────────────────────────────
 def stamp_pdf(serial: str) -> bytes:
     """Overlay serial number on page 1 of the form and return PDF bytes."""
-    # Build a one-page overlay containing only the serial text
     packet = io.BytesIO()
-    c = canvas.Canvas(packet, pagesize=(612, 1008))   # matches your PDF size
+    c = canvas.Canvas(packet, pagesize=(612, 1008))
     c.setFont("Helvetica-Bold", 11)
-    c.setFillColorRGB(0.08, 0.14, 0.49)               # dark-blue ink
-    c.drawCentredString(306, 982, f"Application No: {serial}")
+    c.setFillColorRGB(0.08, 0.14, 0.49)
+    c.drawCentredString(306, 987, f"Application No: {serial}")
     c.save()
     packet.seek(0)
 
@@ -77,6 +76,118 @@ def stamp_pdf(serial: str) -> bytes:
     for i, page in enumerate(reader.pages):
         if i == 0:
             page.merge_page(overlay.pages[0])
+        writer.add_page(page)
+
+    out = io.BytesIO()
+    writer.write(out)
+    out.seek(0)
+    return out.read()
+
+
+def fill_pdf(serial: str, data: dict) -> bytes:
+    """Fill the form with user data and stamp the serial number."""
+    W, H = 612, 1008
+    FONT, SZ = "Helvetica", 9
+
+    def trunc(key, n):
+        return str(data.get(key) or "")[:n]
+
+    def overlay_page(draw_fn):
+        buf = io.BytesIO()
+        c = canvas.Canvas(buf, pagesize=(W, H))
+        c.setFont(FONT, SZ)
+        c.setFillColorRGB(0, 0, 0)
+        draw_fn(c)
+        c.save()
+        buf.seek(0)
+        return buf
+
+    # ── Page 1 overlay ────────────────────────────────────────────────────────
+    def draw_p1(c):
+        # Serial (dark blue, bold)
+        c.setFont("Helvetica-Bold", 11)
+        c.setFillColorRGB(0.08, 0.14, 0.49)
+        c.drawCentredString(306, 987, f"Application No: {serial}")
+        c.setFont(FONT, SZ)
+        c.setFillColorRGB(0, 0, 0)
+
+        # Full Name — split across two lines
+        name = str(data.get("full_name") or "")
+        c.drawString(72, 862, name[:65])
+        if len(name) > 65:
+            c.drawString(72, 836, name[65:130])
+
+        # Age / Sex
+        c.drawString(112, 811, trunc("age", 15))
+        c.drawString(380, 811, trunc("sex", 10))
+
+        # Residential Address — two lines
+        addr = str(data.get("address") or "")
+        c.drawString(72, 760, addr[:65])
+        if len(addr) > 65:
+            c.drawString(72, 734, addr[65:130])
+
+        # Telephone / Mobile
+        c.drawString(250, 708, trunc("phone", 45))
+
+        # Income sources
+        c.drawString(157, 658, trunc("pension", 22))
+        c.drawString(413, 658, trunc("salary", 22))
+        c.drawString(162, 623, trunc("business", 22))
+        c.drawString(413, 623, trunc("others", 22))
+
+        # Donation table (3 rows, estimated y from PDF layout)
+        for i, y in enumerate([470, 425, 380]):
+            pfx = f"don_{i+1}_"
+            c.drawString(78,  y, str(i + 1))
+            c.drawString(122, y, trunc(pfx + "name", 34))
+            c.drawString(395, y, trunc(pfx + "date", 12))
+            c.drawString(487, y, trunc(pfx + "amount", 8))
+
+        # Expenditure table (4 rows × 2 columns, estimated y from PDF layout)
+        for i, y in enumerate([263, 228, 193, 158]):
+            pfx = f"exp_{i+1}_"
+            c.drawString(83,  y, trunc(pfx + "desc1", 20))
+            c.drawString(255, y, trunc(pfx + "amt1",  10))
+            c.drawString(365, y, trunc(pfx + "desc2", 16))
+            c.drawString(498, y, trunc(pfx + "amt2",  8))
+
+        # Total monthly expenditure
+        c.drawString(415, 143, trunc("exp_total", 22))
+
+        # Previous aid
+        prev = (data.get("previous_aid") or "NO").upper()
+        c.drawString(310, 90, prev)
+        if prev == "YES":
+            c.drawString(355, 55, trunc("previous_aid_details", 33))
+
+    # ── Page 2 overlay ────────────────────────────────────────────────────────
+    def draw_p2(c):
+        # Nature of requirement — up to 4 lines of ~70 chars
+        req = str(data.get("requirement") or "")
+        for line, y in zip(
+            [req[i:i+70] for i in range(0, min(len(req), 280), 70)],
+            [921, 890, 860, 829],
+        ):
+            c.drawString(72, y, line)
+
+        # Date
+        date_val = data.get("date") or datetime.now().strftime("%d/%m/%Y")
+        c.drawString(155, 676, str(date_val)[:20])
+
+    p1_buf = overlay_page(draw_p1)
+    p2_buf = overlay_page(draw_p2)
+
+    overlay1 = PdfReader(p1_buf)
+    overlay2 = PdfReader(p2_buf)
+    reader   = PdfReader(PDF_PATH)
+    writer   = PdfWriter()
+
+    for i, page in enumerate(reader.pages):
+        if i == 0:
+            page.merge_page(overlay1.pages[0])
+        elif i == 1:
+            page.merge_page(overlay2.pages[0])
         writer.add_page(page)
 
     out = io.BytesIO()
@@ -100,6 +211,24 @@ def download():
         as_attachment=True,
         download_name=filename,
     )
+
+@app.route("/fill-and-download", methods=["POST"])
+def fill_and_download():
+    """Accept form data, fill the PDF, stamp a serial, and return it."""
+    fd = request.form
+    if not fd.get("full_name") or not fd.get("requirement"):
+        return jsonify({"error": "full_name and requirement are required"}), 400
+
+    serial   = next_serial()
+    pdf_data = fill_pdf(serial, fd.to_dict())
+    filename = f"Application_Form_{serial.replace('/', '_')}.pdf"
+    return send_file(
+        io.BytesIO(pdf_data),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=filename,
+    )
+
 
 @app.route("/generate-serial")
 def generate_serial():
