@@ -377,38 +377,45 @@
 
     <!-- 5. Monthly Expenditure -->
     <div class="form-section">
-      <h3>5. Major Monthly Expenses <small>(optional — up to 8 items)</small></h3>
-      <div class="tbl-head exp-grid">
-        <span>Description</span><span>Amount (₹)</span>
+      <h3>5. Major Monthly Expenses <small>(optional)</small></h3>
+      <div class="tbl-head" style="display:grid;grid-template-columns:1fr 120px;gap:4px;margin-bottom:.3rem">
         <span>Description</span><span>Amount (₹)</span>
       </div>
-      <div class="tbl-row exp-grid">
+      <div class="tbl-row" style="display:grid;grid-template-columns:1fr 120px;gap:4px;margin-bottom:4px">
         <input type="text" name="exp_1_desc1" maxlength="20" placeholder="e.g. Rent">
-        <input type="text" name="exp_1_amt1"  maxlength="10" placeholder="0">
+        <input type="text" name="exp_1_amt1"  maxlength="10" placeholder="e.g. 5000">
+      </div>
+      <div class="tbl-row" style="display:grid;grid-template-columns:1fr 120px;gap:4px;margin-bottom:4px">
         <input type="text" name="exp_1_desc2" maxlength="16" placeholder="e.g. Groceries">
-        <input type="text" name="exp_1_amt2"  maxlength="8"  placeholder="0">
+        <input type="text" name="exp_1_amt2"  maxlength="8">
       </div>
-      <div class="tbl-row exp-grid">
+      <div class="tbl-row" style="display:grid;grid-template-columns:1fr 120px;gap:4px;margin-bottom:4px">
         <input type="text" name="exp_2_desc1" maxlength="20">
-        <input type="text" name="exp_2_amt1"  maxlength="10" placeholder="0">
+        <input type="text" name="exp_2_amt1"  maxlength="10">
+      </div>
+      <div class="tbl-row" style="display:grid;grid-template-columns:1fr 120px;gap:4px;margin-bottom:4px">
         <input type="text" name="exp_2_desc2" maxlength="16">
-        <input type="text" name="exp_2_amt2"  maxlength="8"  placeholder="0">
+        <input type="text" name="exp_2_amt2"  maxlength="8">
       </div>
-      <div class="tbl-row exp-grid">
+      <div class="tbl-row" style="display:grid;grid-template-columns:1fr 120px;gap:4px;margin-bottom:4px">
         <input type="text" name="exp_3_desc1" maxlength="20">
-        <input type="text" name="exp_3_amt1"  maxlength="10" placeholder="0">
-        <input type="text" name="exp_3_desc2" maxlength="16">
-        <input type="text" name="exp_3_amt2"  maxlength="8"  placeholder="0">
+        <input type="text" name="exp_3_amt1"  maxlength="10">
       </div>
-      <div class="tbl-row exp-grid">
+      <div class="tbl-row" style="display:grid;grid-template-columns:1fr 120px;gap:4px;margin-bottom:4px">
+        <input type="text" name="exp_3_desc2" maxlength="16">
+        <input type="text" name="exp_3_amt2"  maxlength="8">
+      </div>
+      <div class="tbl-row" style="display:grid;grid-template-columns:1fr 120px;gap:4px;margin-bottom:4px">
         <input type="text" name="exp_4_desc1" maxlength="20">
-        <input type="text" name="exp_4_amt1"  maxlength="10" placeholder="0">
+        <input type="text" name="exp_4_amt1"  maxlength="10">
+      </div>
+      <div class="tbl-row" style="display:grid;grid-template-columns:1fr 120px;gap:4px;margin-bottom:4px">
         <input type="text" name="exp_4_desc2" maxlength="16">
-        <input type="text" name="exp_4_amt2"  maxlength="8"  placeholder="0">
+        <input type="text" name="exp_4_amt2"  maxlength="8">
       </div>
       <div class="field" style="margin-top:.75rem">
         <label>Total Average Monthly Expenditure (₹)</label>
-        <input type="text" name="exp_total" maxlength="22" placeholder="Sum of all expenses">
+        <input type="text" name="exp_total" maxlength="22" placeholder="e.g. 15000">
       </div>
     </div>
 
