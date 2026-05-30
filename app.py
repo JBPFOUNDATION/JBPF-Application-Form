@@ -67,7 +67,7 @@ def stamp_pdf(serial: str) -> bytes:
     c = canvas.Canvas(packet, pagesize=(612, 1008))
     c.setFont("Helvetica-Bold", 11)
     c.setFillColorRGB(0.08, 0.14, 0.49)
-    c.drawCentredString(306, 960, f"Application No: {serial}")
+    c.drawString(72, 960, f"Application No: {serial}")
     c.save()
     packet.seek(0)
 
@@ -109,7 +109,7 @@ def fill_pdf(serial: str, data: dict) -> bytes:
         # Serial (dark blue, bold)
         c.setFont("Helvetica-Bold", 11)
         c.setFillColorRGB(0.08, 0.14, 0.49)
-        c.drawCentredString(306, 960, f"Application No: {serial}")
+        c.drawString(72, 960, f"Application No: {serial}")
         c.setFont(FONT, SZ)
         c.setFillColorRGB(0, 0, 0)
 
