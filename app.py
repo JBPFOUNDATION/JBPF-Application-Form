@@ -101,6 +101,14 @@ def download():
         download_name=filename,
     )
 
+@app.route("/generate-serial")
+def generate_serial():
+    """Called by Google Apps Script on form submit. Returns next serial and increments counter."""
+    if request.args.get("key") != DOWNLOAD_KEY:
+        return jsonify({"error": "unauthorized"}), 401
+    serial = next_serial()
+    return jsonify({"serial": serial})
+
 @app.route("/counter")
 def counter():
     """Return total downloads (all-time seq for current period)."""
