@@ -154,9 +154,16 @@ def fill_pdf(serial: str, data: dict) -> bytes:
         # Total monthly expenditure
         c.drawString(415, 143, trunc("exp_total", 22))
 
-        # Previous aid
+        # Previous aid — underline YES or NO in the form's "YES/NO" label
+        # "YES/NO" starts at x≈269; YES≈x269-292, NO≈x296-314
         prev = (data.get("previous_aid") or "NO").upper()
-        c.drawString(310, 90, prev)
+        c.setStrokeColorRGB(0, 0, 0)
+        c.setLineWidth(1.5)
+        if prev == "YES":
+            c.line(269, 84, 292, 84)
+        else:
+            c.line(296, 84, 314, 84)
+        c.setLineWidth(1)
         if prev == "YES":
             c.drawString(355, 55, trunc("previous_aid_details", 33))
 
