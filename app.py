@@ -66,7 +66,7 @@ def stamp_pdf(serial: str) -> bytes:
     c = canvas.Canvas(packet, pagesize=(612, 1008))   # matches your PDF size
     c.setFont("Helvetica-Bold", 11)
     c.setFillColorRGB(0.08, 0.14, 0.49)               # dark-blue ink
-    c.drawString(22, 982, f"Application No: {serial}")
+    c.drawCentredString(306, 982, f"Application No: {serial}")
     c.save()
     packet.seek(0)
 
