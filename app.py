@@ -65,7 +65,7 @@ def stamp_pdf(serial: str) -> bytes:
     c = canvas.Canvas(packet, pagesize=(612, 1008))
     c.setFont("Helvetica-Bold", 11)
     c.setFillColorRGB(0.08, 0.14, 0.49)
-    c.drawCentredString(306, 987, f"Application No: {serial}")
+    c.drawCentredString(306, 960, f"Application No: {serial}")
     c.save()
     packet.seek(0)
 
@@ -87,7 +87,7 @@ def stamp_pdf(serial: str) -> bytes:
 def fill_pdf(serial: str, data: dict) -> bytes:
     """Fill the form with user data and stamp the serial number."""
     W, H = 612, 1008
-    FONT, SZ = "Helvetica", 9
+    FONT, SZ = "Helvetica", 11
 
     def trunc(key, n):
         return str(data.get(key) or "")[:n]
@@ -107,37 +107,36 @@ def fill_pdf(serial: str, data: dict) -> bytes:
         # Serial (dark blue, bold)
         c.setFont("Helvetica-Bold", 11)
         c.setFillColorRGB(0.08, 0.14, 0.49)
-        c.drawCentredString(306, 987, f"Application No: {serial}")
+        c.drawCentredString(306, 960, f"Application No: {serial}")
         c.setFont(FONT, SZ)
         c.setFillColorRGB(0, 0, 0)
 
-        # Full Name — split across two lines
+        # Full Name — 3 pts above each underline (underlines at y≈859, 833)
         name = str(data.get("full_name") or "")
         c.drawString(72, 862, name[:65])
         if len(name) > 65:
             c.drawString(72, 836, name[65:130])
 
-        # Age / Sex
+        # Age — 3 pts above underline at y≈808
         c.drawString(112, 811, trunc("age", 15))
-        c.drawString(380, 811, trunc("sex", 10))
 
-        # Residential Address — two lines
+        # Residential Address — 3 pts above underlines at y≈757, 731
         addr = str(data.get("address") or "")
         c.drawString(72, 760, addr[:65])
         if len(addr) > 65:
             c.drawString(72, 734, addr[65:130])
 
-        # Telephone / Mobile
+        # Telephone / Mobile — 3 pts above underline at y≈705
         c.drawString(250, 708, trunc("phone", 45))
 
-        # Income sources
-        c.drawString(157, 658, trunc("pension", 22))
-        c.drawString(413, 658, trunc("salary", 22))
-        c.drawString(162, 623, trunc("business", 22))
-        c.drawString(413, 623, trunc("others", 22))
+        # Income sources — 3 pts above underlines at y≈655, 619
+        c.drawString(157, 658, trunc("pension",  22))
+        c.drawString(413, 658, trunc("salary",   22))
+        c.drawString(162, 622, trunc("business", 22))
+        c.drawString(413, 622, trunc("others",   22))
 
-        # Donation table (3 rows, estimated y from PDF layout)
-        for i, y in enumerate([470, 425, 380]):
+        # Donation table (3 rows; row height ≈30 pts, top border at y≈488)
+        for i, y in enumerate([468, 440, 412]):
             pfx = f"don_{i+1}_"
             c.drawString(78,  y, str(i + 1))
             c.drawString(122, y, trunc(pfx + "name", 34))
