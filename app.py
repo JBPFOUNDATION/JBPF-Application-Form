@@ -205,8 +205,7 @@ def fill_pdf(serial: str, data: dict) -> bytes:
 
 # ── Google Sheets logging ─────────────────────────────────────────────────────
 def _log_to_sheets(serial, data):
-    """POST submission details to Google Apps Script webhook (fire-and-forget).
-    Apps Script returns a 302 redirect — we follow it manually with a second POST."""
+    """POST submission to Google Apps Script. Handles the 302 redirect Apps Script returns."""
     if not SHEETS_URL:
         return
     payload = json.dumps({
@@ -218,26 +217,23 @@ def _log_to_sheets(serial, data):
         "reference": data.get("reference", ""),
     }).encode()
     try:
-        # First request — expect a 302 from Apps Script
+        # Apps Script returns 302 → follow it with the same payload
         req = urllib.request.Request(
             SHEETS_URL, data=payload,
             headers={"Content-Type": "application/json"},
         )
-        opener = urllib.request.build_opener(urllib.request.HTTPRedirectHandler())
-        # Disable auto-redirect so we can re-POST to the redirect URL
-        opener.handler_map.clear()
         try:
-            opener.open(req, timeout=10)
+            urllib.request.urlopen(req, timeout=10)
         except urllib.error.HTTPError as e:
-            if e.code in (301, 302, 303, 307, 308) and "Location" in e.headers:
-                redirect_url = e.headers["Location"]
+            location = e.headers.get("Location")
+            if location:
                 req2 = urllib.request.Request(
-                    redirect_url, data=payload,
+                    location, data=payload,
                     headers={"Content-Type": "application/json"},
                 )
                 urllib.request.urlopen(req2, timeout=10)
     except Exception:
-        pass  # never block the download if logging fails
+        pass
 
 def log_to_sheets(serial, data):
     threading.Thread(target=_log_to_sheets, args=(serial, data), daemon=True).start()
