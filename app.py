@@ -7,11 +7,12 @@ Serial counter persists in counter.json
 from flask import Flask, send_file, render_template, jsonify, request, redirect
 from flask_cors import CORS
 from pypdf import PdfReader, PdfWriter
-from reportlab.pdfgen import canvas 
+from reportlab.pdfgen import canvas
 import io
 import json
 import os
 import threading
+import urllib.request
 from datetime import datetime
 
 app = Flask(__name__)
@@ -23,6 +24,7 @@ COUNTER_FILE  = os.path.join(os.path.dirname(__file__), "counter.json")
 PREFIX        = "JBPF"          # Change to your trust initials if needed
 FORM_URL      = "https://forms.gle/MUELu1tA9cfKKr8s6"
 DOWNLOAD_KEY  = os.environ.get("DOWNLOAD_KEY", "jbpf2026secure")
+SHEETS_URL    = os.environ.get("SHEETS_WEBHOOK_URL", "")
 MONTH_ABBR    = ["JAN","FEB","MAR","APR","MAY","JUN",
                  "JUL","AUG","SEP","OCT","NOV","DEC"]
 
@@ -201,6 +203,31 @@ def fill_pdf(serial: str, data: dict) -> bytes:
     out.seek(0)
     return out.read()
 
+# ── Google Sheets logging ─────────────────────────────────────────────────────
+def _log_to_sheets(serial, data):
+    """POST submission details to Google Apps Script webhook (fire-and-forget)."""
+    if not SHEETS_URL:
+        return
+    payload = json.dumps({
+        "serial":    serial,
+        "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+        "name":      data.get("full_name", ""),
+        "phone":     data.get("phone", ""),
+        "email":     data.get("email", ""),
+        "reference": data.get("reference", ""),
+    }).encode()
+    try:
+        req = urllib.request.Request(
+            SHEETS_URL, data=payload,
+            headers={"Content-Type": "application/json"},
+        )
+        urllib.request.urlopen(req, timeout=10)
+    except Exception:
+        pass  # never block the download if logging fails
+
+def log_to_sheets(serial, data):
+    threading.Thread(target=_log_to_sheets, args=(serial, data), daemon=True).start()
+
 # ── Routes ────────────────────────────────────────────────────────────────────
 @app.route("/download")
 def download():
@@ -226,7 +253,9 @@ def fill_and_download():
         return jsonify({"error": "full_name and requirement are required"}), 400
 
     serial   = next_serial()
-    pdf_data = fill_pdf(serial, fd.to_dict())
+    data     = fd.to_dict()
+    pdf_data = fill_pdf(serial, data)
+    log_to_sheets(serial, data)
     filename = f"Application_Form_{serial.replace('/', '_')}.pdf"
     return send_file(
         io.BytesIO(pdf_data),

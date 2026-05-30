@@ -311,17 +311,29 @@
         <label>Full Name <span class="req">*</span></label>
         <input type="text" name="full_name" required maxlength="120" placeholder="As it appears on official documents">
       </div>
-      <div class="field" style="max-width:200px">
-        <label>Age <span class="req">*</span></label>
-        <input type="number" name="age" required min="1" max="120" placeholder="e.g. 42">
+      <div class="row-2">
+        <div class="field">
+          <label>Age <span class="req">*</span></label>
+          <input type="number" name="age" required min="1" max="120" placeholder="e.g. 42">
+        </div>
+        <div class="field">
+          <label>Telephone / Mobile <span class="req">*</span></label>
+          <input type="tel" name="phone" required placeholder="e.g. 9876543210">
+        </div>
       </div>
       <div class="field">
         <label>Residential Address <span class="req">*</span></label>
         <textarea name="address" required maxlength="130" rows="2" placeholder="Full postal address"></textarea>
       </div>
-      <div class="field">
-        <label>Telephone / Mobile <span class="req">*</span></label>
-        <input type="tel" name="phone" required placeholder="e.g. 9876543210">
+      <div class="row-2">
+        <div class="field">
+          <label>Email ID</label>
+          <input type="email" name="email" placeholder="e.g. name@email.com">
+        </div>
+        <div class="field">
+          <label>Reference</label>
+          <input type="text" name="reference" maxlength="50" placeholder="Who referred you?">
+        </div>
       </div>
     </div>
 
