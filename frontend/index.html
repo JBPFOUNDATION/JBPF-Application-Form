@@ -318,7 +318,8 @@
         </div>
         <div class="field">
           <label>Telephone / Mobile <span class="req">*</span></label>
-          <input type="tel" name="phone" required placeholder="e.g. 9876543210">
+          <input type="tel" name="phone" required maxlength="10" minlength="10"
+                 pattern="[0-9]{10}" inputmode="numeric" placeholder="10-digit mobile number">
         </div>
       </div>
       <div class="field">
@@ -372,17 +373,17 @@
       </div>
       <div class="tbl-row donation-grid">
         <input type="text" name="don_1_name"   maxlength="34" placeholder="Name, address, phone">
-        <input type="text" name="don_1_date"   maxlength="12" placeholder="DD/MM/YYYY">
+        <input type="text" name="don_1_date"   maxlength="10" placeholder="DD/MM/YYYY" class="date-input" inputmode="numeric">
         <input type="text" name="don_1_amount" maxlength="8"  placeholder="0">
       </div>
       <div class="tbl-row donation-grid">
         <input type="text" name="don_2_name"   maxlength="34" placeholder="Name, address, phone">
-        <input type="text" name="don_2_date"   maxlength="12" placeholder="DD/MM/YYYY">
+        <input type="text" name="don_2_date"   maxlength="10" placeholder="DD/MM/YYYY" class="date-input" inputmode="numeric">
         <input type="text" name="don_2_amount" maxlength="8"  placeholder="0">
       </div>
       <div class="tbl-row donation-grid">
         <input type="text" name="don_3_name"   maxlength="34" placeholder="Name, address, phone">
-        <input type="text" name="don_3_date"   maxlength="12" placeholder="DD/MM/YYYY">
+        <input type="text" name="don_3_date"   maxlength="10" placeholder="DD/MM/YYYY" class="date-input" inputmode="numeric">
         <input type="text" name="don_3_amount" maxlength="8"  placeholder="0">
       </div>
     </div>
@@ -482,6 +483,28 @@
     document.getElementById('tab-' + name).classList.add('active');
   }
 
+  // Date auto-slash masking: digits only → DD/MM/YYYY
+  document.querySelectorAll('.date-input').forEach(input => {
+    input.addEventListener('input', function(e) {
+      // Preserve cursor intent on deletion
+      const isDeleting = e.inputType && e.inputType.startsWith('delete');
+      let digits = this.value.replace(/\D/g, '').slice(0, 8);
+      let formatted = '';
+      if (digits.length <= 2) {
+        formatted = digits;
+      } else if (digits.length <= 4) {
+        formatted = digits.slice(0,2) + '/' + digits.slice(2);
+      } else {
+        formatted = digits.slice(0,2) + '/' + digits.slice(2,4) + '/' + digits.slice(4);
+      }
+      // Don't re-append slash if user is deleting
+      if (isDeleting && (formatted.endsWith('/') )) {
+        formatted = formatted.slice(0, -1);
+      }
+      this.value = formatted;
+    });
+  });
+
   // Show/hide previous aid detail field
   document.querySelectorAll('input[name=previous_aid]').forEach(r => {
     r.addEventListener('change', () => {
@@ -497,11 +520,18 @@
     const status = document.getElementById('status');
 
     // Basic validation
-    const name = form.full_name.value.trim();
-    const req  = form.requirement.value.trim();
+    const name  = form.full_name.value.trim();
+    const req   = form.requirement.value.trim();
+    const phone = form.phone.value.replace(/\D/g, '');
     if (!name || !req) {
       status.className = 'status error';
       status.textContent = 'Please fill in Full Name and Nature of Requirement.';
+      return;
+    }
+    if (phone.length !== 10) {
+      status.className = 'status error';
+      status.textContent = 'Please enter a valid 10-digit mobile number.';
+      form.phone.focus();
       return;
     }
 

@@ -12,6 +12,7 @@ import io
 import json
 import os
 import threading
+import unicodedata
 import urllib.request
 from datetime import datetime
 
@@ -86,13 +87,21 @@ def stamp_pdf(serial: str) -> bytes:
     return out.read()
 
 
+def _ascii(text) -> str:
+    """Normalize unicode to ASCII so Helvetica renders without black squares."""
+    if not text:
+        return ""
+    normalized = unicodedata.normalize("NFKD", str(text))
+    return normalized.encode("ascii", "ignore").decode("ascii")
+
+
 def fill_pdf(serial: str, data: dict) -> bytes:
     """Fill the form with user data and stamp the serial number."""
     W, H = 612, 1008
     FONT, SZ = "Helvetica", 11
 
     def trunc(key, n):
-        return str(data.get(key) or "")[:n]
+        return _ascii(data.get(key) or "")[:n]
 
     def overlay_page(draw_fn):
         buf = io.BytesIO()
@@ -114,7 +123,7 @@ def fill_pdf(serial: str, data: dict) -> bytes:
         c.setFillColorRGB(0, 0, 0)
 
         # Full Name — 3 pts above each underline (underlines at y≈859, 833)
-        name = str(data.get("full_name") or "")
+        name = _ascii(data.get("full_name") or "")
         c.drawString(72, 862, name[:65])
         if len(name) > 65:
             c.drawString(72, 836, name[65:130])
@@ -123,7 +132,7 @@ def fill_pdf(serial: str, data: dict) -> bytes:
         c.drawString(112, 811, trunc("age", 15))
 
         # Residential Address — 3 pts above underlines at y≈757, 731
-        addr = str(data.get("address") or "")
+        addr = _ascii(data.get("address") or "")
         c.drawString(72, 760, addr[:65])
         if len(addr) > 65:
             c.drawString(72, 734, addr[65:130])
@@ -172,7 +181,7 @@ def fill_pdf(serial: str, data: dict) -> bytes:
     # ── Page 2 overlay ────────────────────────────────────────────────────────
     def draw_p2(c):
         # Nature of requirement — up to 4 lines of ~70 chars
-        req = str(data.get("requirement") or "")
+        req = _ascii(data.get("requirement") or "")
         for line, y in zip(
             [req[i:i+70] for i in range(0, min(len(req), 280), 70)],
             [921, 890, 860, 829],
